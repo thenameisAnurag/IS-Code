@@ -1,0 +1,86 @@
+def prepare_input(text):
+    # Remove spaces and convert to uppercase
+    text = text.replace(" ", "").upper()
+    # Replace 'J' with 'I'
+    text = text.replace("J", "I")
+    # Add 'X' between double letters and make the length even
+    i = 0
+    while i < len(text)-1:
+        if text[i] == text[i+1]:
+            text = text[:i+1] + 'X' + text[i+1:]
+        i += 2
+    if len(text) % 2 != 0:
+        text += 'X'
+    return text
+
+def generate_key_matrix(key):
+    # Generate key matrix
+    key_matrix = []
+    for char in key:
+        if char not in key_matrix:
+            key_matrix.append(char)
+    alphabet = "ABCDEFGHIKLMNOPQRSTUVWXYZ"
+    for char in alphabet:
+        if char not in key_matrix:
+            key_matrix.append(char)
+    # Reshape matrix to 5x5
+    key_matrix = [key_matrix[i:i+5] for i in range(0, 25, 5)]
+    return key_matrix
+
+def find_char(char, key_matrix):
+    # Find position of a character in the key matrix
+    for i in range(5):
+        for j in range(5):
+            if key_matrix[i][j] == char:
+                return i, j
+    # If character is not found, return None
+    return None, None
+
+def encrypt(text, key):
+    text = prepare_input(text)
+    key = prepare_input(key)  # Process key
+    key_matrix = generate_key_matrix(key)
+    encrypted_text = ""
+    for i in range(0, len(text), 2):
+        row1, col1 = find_char(text[i], key_matrix)
+        row2, col2 = find_char(text[i+1], key_matrix)
+        if None in (row1, col1, row2, col2):
+            continue  # Skip if character not found in key matrix
+        if row1 == row2:
+            encrypted_text += key_matrix[row1][(col1+1)%5]
+            encrypted_text += key_matrix[row2][(col2+1)%5]
+        elif col1 == col2:
+            encrypted_text += key_matrix[(row1+1)%5][col1]
+            encrypted_text += key_matrix[(row2+1)%5][col2]
+        else:
+            encrypted_text += key_matrix[row1][col2]
+            encrypted_text += key_matrix[row2][col1]
+    return encrypted_text
+
+def decrypt(text, key):
+    key = prepare_input(key)  # Process key
+    key_matrix = generate_key_matrix(key)
+    decrypted_text = ""
+    for i in range(0, len(text), 2):
+        row1, col1 = find_char(text[i], key_matrix)
+        row2, col2 = find_char(text[i+1], key_matrix)
+        if None in (row1, col1, row2, col2):
+            continue  # Skip if character not found in key matrix
+        if row1 == row2:
+            decrypted_text += key_matrix[row1][(col1-1)%5]
+            decrypted_text += key_matrix[row2][(col2-1)%5]
+        elif col1 == col2:
+            decrypted_text += key_matrix[(row1-1)%5][col1]
+            decrypted_text += key_matrix[(row2-1)%5][col2]
+        else:
+            decrypted_text += key_matrix[row1][col2]
+            decrypted_text += key_matrix[row2][col1]
+    return decrypted_text
+
+# Example usage
+plaintext = "instruments"
+key = "Monarchy"
+encrypted_text = encrypt(plaintext, key)
+print("Encrypted:", encrypted_text)
+decrypted_text = decrypt(encrypted_text, key)
+print("Decrypted:", decrypted_text)

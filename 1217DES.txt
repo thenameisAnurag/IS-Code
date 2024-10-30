@@ -1,0 +1,25 @@
+from Crypto.Cipher import DES
+from Crypto.Random import get_random_bytes
+from Crypto.Util.Padding import pad, unpad
+
+def encrypt_msg(message, key):
+    cipher = DES.new(key, DES.MODE_ECB)
+    padded_msg = pad(message.encode('UTF-8'), DES.block_size)
+    cipher_text = cipher.encrypt(padded_msg)
+    return cipher_text
+
+def decrypt_msg(cipher_text, key):
+    cipher = DES.new(key, DES.MODE_ECB)
+    decrypted_msg = cipher.decrypt(cipher_text)
+    unpadded_msg = unpad(decrypted_msg, DES.block_size)
+    return unpadded_msg.decode('UTF-8')
+
+message = "Hello, DES!"
+key = get_random_bytes(8)  # 8 bytes key for DES
+print("Original Message:", message)
+
+encrypted_message = encrypt_msg(message, key)
+print("Encrypted Message:", encrypted_message)
+
+decrypted_message = decrypt_msg(encrypted_message, key)
+print("Decrypted Message:", decrypted_message)
